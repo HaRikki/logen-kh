@@ -34,7 +34,7 @@ Production-like single process: `npm run build --prefix frontend` then `uvicorn 
 
 ## Deploy to Render
 **Recommended: Docker runtime** (Blueprint `render.yaml`, or *New → Web Service → Docker*). It installs Python + Node itself.
-If you created the service as **Node/Python** instead, use: Build Command `pip install -r requirements.txt && npm --prefix frontend install && npm --prefix frontend run build`, Start Command `python3 -m alembic upgrade head && python3 -m uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*' --workers 1`. (A Node-only image without pip cannot run this: switch to Docker. Runtime of an existing service cannot be changed; create a new one.)
+If you created the service as **Node/Python** instead, use: Build Command `npm run build`, Start Command `npm start` (they install Python packages into `./.pylibs` because Debian's Python blocks system-wide pip, and run with `PYTHONPATH=.pylibs`). (A Node-only image without pip cannot run this: switch to Docker. Runtime of an existing service cannot be changed; create a new one.)
 1. Push this folder to GitHub.
 2. Render → **New → Blueprint** → select the repo (`render.yaml`: Docker web service + Postgres).
 3. Fill the `sync: false` env vars: `FERNET_KEY`, `ADMIN_EMAIL`, `PUBLIC_BASE_URL` (your onrender.com or custom URL), optionally `PROVIDER_CHECK_URL`, OAuth, SMTP.
