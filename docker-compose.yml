@@ -1,0 +1,18 @@
+# VPS quick start:  cp .env.example .env  &&  docker compose up -d --build
+# Put Caddy / nginx / Cloudflare in front for HTTPS.
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment: { POSTGRES_USER: khpay, POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-change-me}", POSTGRES_DB: khpay }
+    volumes: [pgdata:/var/lib/postgresql/data]
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on: [db]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://khpay:${POSTGRES_PASSWORD:-change-me}@db:5432/khpay
+    ports: ["8000:8000"]
+volumes:
+  pgdata:

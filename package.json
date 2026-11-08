@@ -1,0 +1,14 @@
+{
+  "name": "logen-khpay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Logen KHPay - multi-user ABA PayWay + Bakong KHQR API platform",
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "AUTO_CREATE_TABLES=1 uvicorn main:app --reload --port 8000",
+    "migrate": "alembic upgrade head",
+    "start": "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*' --workers 1",
+    "test": "python tests/test_security.py"
+  }
+}

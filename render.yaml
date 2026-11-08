@@ -1,0 +1,43 @@
+# Render Blueprint. Push to GitHub -> New > Blueprint.
+databases:
+  - name: logen-khpay-db
+    plan: basic-256mb        # 'free' Postgres is deleted after 30 days - do not use it for real payments
+services:
+  - type: web
+    name: logen-khpay
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase: { name: logen-khpay-db, property: connectionString }
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FERNET_KEY          # python -c "from cryptography.fernet import Fernet;print(Fernet.generate_key().decode())"
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: PUBLIC_BASE_URL     # e.g. https://logen-khpay.onrender.com (or your custom domain)
+        sync: false
+      - key: PROVIDER_CHECK_URL  # can also be set later in Admin > Settings
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
