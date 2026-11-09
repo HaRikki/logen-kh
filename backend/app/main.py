@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -54,6 +55,7 @@ async def lifespan(app):
         task.cancel()
 
 app = FastAPI(title="Logen KHPay", version="1.0.0", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+app.add_middleware(GZipMiddleware, minimum_size=700)   # JS/CSS/JSON are 3-4x smaller on the wire
 
 def err(status, code, message, extra=None):
     body = {"success": False, "error": {"code": code, "message": message}}
@@ -102,6 +104,12 @@ async def core_middleware(request: Request, call_next):
             logging.getLogger("khpay").exception("usage log failed")
     if cors:
         resp.headers["Access-Control-Allow-Origin"] = origin; resp.headers["Access-Control-Allow-Credentials"] = "true"; resp.headers["Vary"] = "Origin"
+    if path.startswith("/assets/"):                 # hashed filenames: cache forever
+        resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    elif path.startswith(("/api/", "/auth/", "/admin/api/")):
+        resp.headers["Cache-Control"] = "no-store"
+    elif "text/html" in resp.headers.get("content-type", ""):
+        resp.headers["Cache-Control"] = "no-cache"     # always pick up the newest build
     resp.headers.setdefault("X-Content-Type-Options", "nosniff")
     resp.headers.setdefault("X-Frame-Options", "DENY")
     resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")

@@ -17,12 +17,14 @@
   .label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400; }
   .th { @apply px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400; }
   .td { @apply px-3 py-3 text-sm; }
-  .glass { @apply border border-white/10 bg-white/5 backdrop-blur-md; }
+  .glass { @apply border border-white/10 bg-white/[.06]; }   /* no backdrop-filter: it is very expensive on phones */
   .grad-text { @apply bg-gradient-to-r from-sea-400 via-cyan-300 to-sea-400 bg-clip-text text-transparent; }
 }
 /* page + scroll-reveal animations (transform/opacity only: GPU friendly) */
 @keyframes fadeUp { from { opacity: 0; transform: translate3d(0, 10px, 0) } to { opacity: 1; transform: none } }
-.fade-up { animation: fadeUp .4s cubic-bezier(.22,1,.36,1) both }
+.fade-up { animation: fadeUp .28s cubic-bezier(.22,1,.36,1) both }
+.cv-auto { content-visibility: auto; contain-intrinsic-size: auto 640px; }
+.halo { background: radial-gradient(closest-side, rgb(8 127 165 / .35), transparent); transform: translateZ(0); }
 .reveal { opacity: 0; transform: translate3d(0, 22px, 0); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); will-change: opacity, transform; }
 .reveal.in { opacity: 1; transform: none; will-change: auto; }
 /* skeleton loaders */

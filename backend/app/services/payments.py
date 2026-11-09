@@ -42,7 +42,7 @@ def create_payment(s: Session, user_id: int, kind: str, amount: float, merchant_
                 merchant_name=getattr(m, "name", None) or m.account_name,
                 aba_merchant_id=m.id if kind == "aba" else None,
                 bakong_account_id=m.id if kind == "bakong" else None,
-                expires_at=now() + dt.timedelta(minutes=ttl))
+                expires_at=(out["expires_at"] if out.get("expires_at") and out["expires_at"] > now() else now() + dt.timedelta(minutes=ttl)))
     s.add(p)
     try:
         s.commit()
@@ -91,15 +91,27 @@ def refresh(s: Session, p: Payment, min_interval=3) -> dict:
     p.last_checked_at = now(); s.commit()
     if st == "paid":
         _transition(s, p, "paid")
+    elif st == "expired":
+        _transition(s, p, "expired")   # the provider itself reports it as Expired
     elif now() > _expires(p):
         _transition(s, p, "expired")   # only after the provider confirmed it is still unpaid
     return {"verified": True, "reason": None}
+
+def _android(p):
+    try:
+        return _data_of(p).get("aba_deeplink_android")
+    except Exception:
+        return None
+
+def _data_of(p):
+    raw = json.loads(p.provider_raw or "{}")
+    return raw.get("data") if isinstance(raw.get("data"), dict) else raw
 
 def public_view(p: Payment, base_checkout: str) -> dict:
     return {"order_id": p.order_id, "type": p.kind, "status": p.status, "amount": float(p.amount),
             "currency": p.currency, "transaction_id": p.transaction_id, "reference": p.reference,
             "merchant_name": p.merchant_name, "qr": p.qr_string, "qr_image": p.qr_image,
-            "deeplink": p.deeplink, "checkout_url": f"{base_checkout}/pay/{p.order_id}",
+            "deeplink": p.deeplink, "deeplink_android": _android(p), "checkout_url": f"{base_checkout}/pay/{p.order_id}",
             "created_at": p.created_at, "expires_at": p.expires_at, "paid_at": p.paid_at}
 
 def stats(s: Session, user_id: int | None = None) -> dict:

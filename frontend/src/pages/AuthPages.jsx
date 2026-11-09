@@ -42,7 +42,7 @@ function Shell({ title, subtitle, children }) {
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
       <aside className="hero-bg relative hidden overflow-hidden p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="grid-bg absolute inset-0" />
-        <div className="absolute -left-24 top-1/3 h-72 w-72 animate-drift rounded-full bg-sea/30 blur-3xl" />
+        <div className="halo absolute -left-24 top-1/3 h-96 w-96" />
         <Link to="/" className="relative text-xl"><Logo size={36} /></Link>
         <div className="relative max-w-md">
           <h2 className="text-4xl font-extrabold leading-tight">Accept <span className="grad-text">KHQR</span> payments in minutes.</h2>

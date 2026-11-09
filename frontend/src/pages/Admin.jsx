@@ -66,7 +66,7 @@ export function AdminLogs() {
 }
 
 const GROUPS = [['Domain & hosting', [['site_url', 'Main Website URL', 'https://logen-khpay.onrender.com'], ['api_base_url', 'API Base URL', 'https://api.logenkhpay.com'], ['checkout_base_url', 'Checkout Base URL', 'https://pay.logenkhpay.com'], ['webhook_base_url', 'Webhook Base URL', ''], ['allowed_origins', 'Allowed CORS origins (comma separated)', 'https://app.example.com']]],
-  ['Payment provider', [['provider_base_url', 'Provider base URL', 'https://khqrpay.site'], ['provider_check_url', 'Provider status-check URL ({ref} {order_id} {transaction_id})', 'https://khqrpay.site/…/{ref}'], ['provider_check_method', 'Status-check method (GET/POST)', 'GET'], ['test_amount', 'Test Connection amount', '0.01'], ['qr_ttl_minutes', 'QR lifetime (minutes)', '10']]],
+  ['Payment provider', [['provider_base_url', 'Provider base URL', 'https://khqrpay.site'], ['provider_check_url', 'Provider status-check URL ({ref} {order_id} {transaction_id})', 'https://khqrpay.site/api/v1/payment?id={ref}'], ['provider_check_method', 'Status-check method (GET/POST)', 'GET'], ['test_amount', 'Test Connection amount', '0.01'], ['qr_ttl_minutes', 'QR lifetime (minutes)', '10']]],
   ['Limits', [['rate_limit_per_min', 'Rate limit per API key / minute', '60']]]]
 
 export function AdminSettings() {

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { QRCodeSVG } from 'qrcode.react'
+const QRCodeSVG = lazy(() => import('qrcode.react').then((m) => ({ default: m.QRCodeSVG })))   // loaded after first paint
 import { ShieldCheck, Zap, Webhook, KeyRound, QrCode, Code2, ArrowRight, CheckCircle2, Users, Clock, Lock, Smartphone } from 'lucide-react'
 import { Logo, Reveal, CopyBtn } from '../lib/ui'
 import { LangTheme } from './Layout'
@@ -62,13 +62,13 @@ function PhoneMock() {
   useEffect(() => { const i = setInterval(() => setS((v) => (v <= 0 ? 599 : v - 1)), 1000); return () => clearInterval(i) }, [])
   return (
     <div className="relative mx-auto w-[290px] animate-float">
-      <div className="absolute -inset-6 rounded-[3rem] bg-sea/25 blur-3xl" />
-      <div className="relative rounded-[2.2rem] border border-white/15 bg-gradient-to-b from-white/15 to-white/5 p-3 shadow-2xl shadow-sea/20 backdrop-blur">
+      <div className="halo absolute -inset-10" />
+      <div className="relative rounded-[2.2rem] border border-white/15 bg-gradient-to-b from-white/15 to-white/5 p-3 shadow-2xl shadow-sea/20">
         <div className="rounded-[1.7rem] bg-white p-5 text-center text-slate-800">
           <Logo size={22} />
           <div className="mt-3 text-xs text-slate-500">My Coffee Shop</div>
           <div className="text-3xl font-extrabold">5.00 <span className="text-base font-semibold text-slate-400">USD</span></div>
-          <div className="mx-auto mt-3 w-fit rounded-2xl bg-white p-2 ring-1 ring-slate-200"><QRCodeSVG value="https://logen-khpay.example/pay/demo" size={150} fgColor="#0a1628" /></div>
+          <div className="mx-auto mt-3 w-fit rounded-2xl bg-white p-2 ring-1 ring-slate-200"><Suspense fallback={<div className="skeleton h-[150px] w-[150px]" />}><QRCodeSVG value="https://logen-khpay.example/pay/demo" size={150} fgColor="#0a1628" /></Suspense></div>
           <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500"><Clock size={13} className="text-sea" />{Math.floor(s / 60)}:{String(s % 60).padStart(2, '0')}</div>
           <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-sea py-2.5 text-sm font-semibold text-white"><Smartphone size={15} />Open ABA Mobile</div>
         </div>
@@ -80,10 +80,10 @@ function PhoneMock() {
 export default function Landing() {
   const { user } = useAuth(); const { lang } = useI18n(); const c = COPY[lang] || COPY.en
   const [tab, setTab] = useState('cURL'); const [stuck, setStuck] = useState(false)
-  useEffect(() => { const h = () => setStuck(window.scrollY > 12); h(); window.addEventListener('scroll', h, { passive: true }); return () => window.removeEventListener('scroll', h) }, [])
+  useEffect(() => { const h = () => setStuck((v) => { const n = window.scrollY > 12; return n === v ? v : n }); h(); window.addEventListener('scroll', h, { passive: true }); return () => window.removeEventListener('scroll', h) }, [])
   return (
     <div className="bg-navy-950 text-white">
-      <header className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${stuck ? 'border-b border-white/10 bg-navy-950/90 backdrop-blur-md' : ''}`}>
+      <header className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${stuck ? 'border-b border-white/10 bg-navy-950/95' : ''}`}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <Link to="/"><Logo /></Link>
           <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex"><a href="#how" className="hover:text-white">How it works</a><a href="#features" className="hover:text-white">Features</a><a href="#code" className="hover:text-white">Code</a><Link to="/docs" className="hover:text-white">Docs</Link></nav>
@@ -94,7 +94,6 @@ export default function Landing() {
 
       <section className="hero-bg relative overflow-hidden pt-28">
         <div className="grid-bg absolute inset-0" />
-        <div className="absolute -left-32 top-40 h-80 w-80 animate-drift rounded-full bg-sea/20 blur-3xl" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pb-24 lg:grid-cols-[1.15fr_1fr]">
           <div className="fade-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-sea/40 bg-sea/10 px-4 py-1.5 text-xs font-semibold text-sea-400"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />{c.badge}</span>
@@ -108,14 +107,14 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-navy-900/60">
+      <section className="cv-auto border-y border-white/10 bg-navy-900/60">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-5 py-8 text-center md:grid-cols-4">
           {[[Clock, '10 min', 'QR lifetime'], [Lock, 'AES-based', 'encrypted provider keys'], [ShieldCheck, 'HMAC-SHA256', 'signed webhooks'], [Zap, 'REST + JSON', 'simple integration']].map(([I, a, b]) => (
             <Reveal key={a}><I className="mx-auto mb-2 text-sea-400" size={20} /><div className="text-xl font-bold">{a}</div><div className="text-xs text-slate-400">{b}</div></Reveal>))}
         </div>
       </section>
 
-      <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-24">
+      <section id="how" className="cv-auto mx-auto max-w-6xl scroll-mt-20 px-5 py-24">
         <Reveal className="mx-auto max-w-2xl text-center"><h2 className="text-3xl font-extrabold md:text-4xl">{c.stepsT}</h2><p className="mt-3 text-slate-400">{c.stepsS}</p></Reveal>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {c.steps.map(([h, p], i) => <Reveal key={h} delay={i * 90}><div className="glass relative h-full rounded-2xl p-6 transition duration-300 hover:-translate-y-1 hover:border-sea/40">
@@ -123,7 +122,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="features" className="scroll-mt-20 bg-navy-900/50 py-24">
+      <section id="features" className="cv-auto scroll-mt-20 bg-navy-900/50 py-24">
         <div className="mx-auto max-w-6xl px-5">
           <Reveal className="mx-auto max-w-2xl text-center"><h2 className="text-3xl font-extrabold md:text-4xl">{c.featT}</h2><p className="mt-3 text-slate-400">{c.featS}</p></Reveal>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -133,7 +132,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="code" className="mx-auto grid max-w-6xl scroll-mt-20 items-center gap-10 px-5 py-24 lg:grid-cols-2">
+      <section id="code" className="cv-auto mx-auto grid max-w-6xl scroll-mt-20 items-center gap-10 px-5 py-24 lg:grid-cols-2">
         <Reveal><h2 className="text-3xl font-extrabold md:text-4xl">{c.codeT}</h2><p className="mt-3 text-slate-400">Send an amount, get back a QR, a hosted checkout URL and an ABA deep link. We verify the payment with the provider and call your webhook.</p>
           <Link to="/docs" className="mt-6 inline-flex items-center gap-2 font-semibold text-sea-400 hover:underline">Read the docs <ArrowRight size={16} /></Link></Reveal>
         <Reveal delay={100}><div className="overflow-hidden rounded-2xl border border-white/10 bg-navy-950 shadow-2xl shadow-sea/10">
@@ -145,6 +144,6 @@ export default function Landing() {
         <div className="grid-bg absolute inset-0" /><div className="relative"><h2 className="text-3xl font-extrabold md:text-4xl">{c.ctaT}</h2><p className="mx-auto mt-3 max-w-xl text-slate-300">{c.ctaS}</p>
           <Link to={user ? '/dashboard' : '/register'} className="btn-primary mt-8 !px-8 !py-3.5 !text-base">{user ? c.dash : c.start}<ArrowRight size={18} /></Link></div></div></Reveal></section>
 
-      <footer className="border-t border-white/10 py-8"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 text-sm text-slate-500"><Logo size={22} /><div className="flex gap-5"><Link to="/docs" className="hover:text-white">Docs</Link><Link to="/login" className="hover:text-white">Login</Link><Link to="/register" className="hover:text-white">Register</Link></div><span>© Logen KHPay</span></div></footer>
+      <footer className="cv-auto border-t border-white/10 py-8"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 text-sm text-slate-500"><Logo size={22} /><div className="flex gap-5"><Link to="/docs" className="hover:text-white">Docs</Link><Link to="/login" className="hover:text-white">Login</Link><Link to="/register" className="hover:text-white">Register</Link></div><span>© Logen KHPay</span></div></footer>
     </div>)
 }

@@ -19,7 +19,7 @@ DEFAULTS = {
     "webhook_base_url": E.get("WEBHOOK_BASE_URL", "").rstrip("/"),
     "allowed_origins": E.get("ALLOWED_ORIGINS", ""),
     "provider_base_url": E.get("PROVIDER_BASE_URL", "https://khqrpay.site").rstrip("/"),
-    "provider_check_url": E.get("PROVIDER_CHECK_URL", ""),
+    "provider_check_url": E.get("PROVIDER_CHECK_URL") or (E.get("PROVIDER_BASE_URL", "https://khqrpay.site").rstrip("/") + "/api/v1/payment?id={ref}"),
     "provider_check_method": E.get("PROVIDER_CHECK_METHOD", "GET"),
     "rate_limit_per_min": E.get("RATE_LIMIT_PER_MIN", "60"),
     "maintenance_mode": "0",

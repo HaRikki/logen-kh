@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/auth'
 import { Spinner, Skeleton } from './lib/ui'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import Layout from './pages/Layout'
 import Landing from './pages/Landing'
 import { Login, AdminLogin, Register, Forgot, Reset } from './pages/AuthPages'
@@ -36,6 +36,13 @@ function Guard({ admin, children }) {
 }
 
 export default function App() {
+  const { user } = useAuth()
+  useEffect(() => {   // warm the chunks the user will open next, when the browser is idle
+    if (!user) return
+    const run = () => [() => import('./pages/Overview'), () => import('./pages/ApiKeys'), () => import('./pages/Merchants'), () => import('./pages/PaymentsPages'), () => import('./pages/Webhooks'), () => import('./pages/Settings'), () => import('./pages/Usage')].forEach((f) => f())
+    const id = ('requestIdleCallback' in window) ? requestIdleCallback(run) : setTimeout(run, 600)
+    return () => (('cancelIdleCallback' in window) ? cancelIdleCallback(id) : clearTimeout(id))
+  }, [user])
   return (
     <Suspense fallback={<div className="p-6"><Skeleton /></div>}>
     <Routes>

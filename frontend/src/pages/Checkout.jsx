@@ -35,7 +35,7 @@ export default function Checkout() {
             <div className="mt-3 flex items-center justify-center gap-2 text-sm"><Clock size={16} className="text-sea" />{t('Time left')}: <b className="font-mono">{Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')}</b></div>
             <div className="mt-1 text-sm text-slate-500">{t('Waiting for payment...')}</div>
             {p.verification === false && <div className="mt-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">Status cannot be verified right now{p.verification_reason === 'provider_check_not_configured' ? ' (provider check not configured)' : ''}.</div>}
-            {p.deeplink && <a className="btn-primary mt-4 w-full" href={p.deeplink}><Smartphone size={16} />{t('Open ABA Mobile')}</a>}</>)}
+            {p.deeplink && <a className="btn-primary mt-4 w-full" href={/android/i.test(navigator.userAgent) && p.deeplink_android ? p.deeplink_android : p.deeplink}><Smartphone size={16} />{t('Open ABA Mobile')}</a>}</>)}
           {st === 'paid' && <div className="py-6"><CheckCircle2 className="mx-auto text-emerald-500" size={64} /><div className="mt-2 text-lg font-bold text-emerald-600">{t('Payment Successful')}</div></div>}
           {st === 'expired' && <div className="py-6"><XCircle className="mx-auto text-slate-400" size={64} /><div className="mt-2 text-lg font-bold">{t('Payment Expired')}</div><p className="mt-1 text-sm text-slate-500">Please request a new QR from the merchant.</p></div>}
         </>)}

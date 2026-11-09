@@ -14,9 +14,7 @@ tests/                   pure-logic tests
 
 ## SETUP REQUIREMENTS (read first)
 
-1. **Provider status-check URL (required).** Only the *create* endpoints of khqrpay.site were specified. The status endpoint and response field names were **not** provided, so nothing is guessed:
-   set `PROVIDER_CHECK_URL` (or Admin → Settings) to the URL from the provider docs, using `{ref}` / `{order_id}` / `{transaction_id}` placeholders. Until it is set, payments stay **pending** and are never marked paid or expired.
-   If the provider's create response uses other field names, adjust the candidate lists in `backend/app/providers.py` (`create_qr`, `check_status`). The raw response is stored in `payments.provider_raw` to help you.
+1. **Provider = khqrpay.site (documented API).** Create uses `POST /api/v1/{aba|bakong}/create` and status uses `GET /api/v1/payment?id={id}` (default `PROVIDER_CHECK_URL`, editable in Admin → Settings). Responses are parsed per the docs (`id`, `qr`, `qr_image`, `aba_deeplink`, `aba_deeplink_android`, status `Pending|Paid|Expired`). The *status response shape* was not in the supplied docs, so top-level and nested (`payment`/`data`) layouts are both accepted; if your first real payment stays pending, check `provider_raw` / the server log and adjust `check_status` in `backend/app/providers.py`.
 2. **No provider auto-provisioning is assumed.** The ABA static link / Bakong account are bound to a *provider API key*. Every user pastes their own provider key (encrypted with Fernet, never returned by any endpoint, not even to admins). Admins can also help by creating the merchant under their own account.
 3. **`FERNET_KEY`** must be generated once and kept forever (losing it makes stored provider keys unreadable).
 4. **Test Connection** asks the provider for one real small QR (`test_amount`, default 0.01). It is not stored as a payment and is never paid.

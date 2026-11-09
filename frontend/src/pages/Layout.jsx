@@ -44,7 +44,7 @@ export default function Layout({ admin }) {
       <div className="fixed inset-y-0 left-0 z-30 hidden lg:block">{Side}</div>
       {open && <div className="fixed inset-0 z-40 flex lg:hidden"><div className="h-full">{Side}</div><div className="flex-1 bg-black/60" onClick={() => setOpen(false)} /></div>}
       <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur-sm dark:border-white/10 dark:bg-navy-950/90">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-white/10 dark:bg-navy-950">
           <button className="btn-ghost !px-2.5 lg:hidden" onClick={() => setOpen(true)}><Menu size={18} /></button>
           <div className="hidden text-sm text-slate-500 lg:block">{t('Welcome back')}, <b className="text-slate-800 dark:text-white">{user?.display_name || user?.email}</b></div>
           <LangTheme />

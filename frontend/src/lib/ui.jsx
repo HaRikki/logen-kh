@@ -12,12 +12,15 @@ export const Spinner = () => <Loader2 className="h-5 w-5 animate-spin text-sea" 
 export const Skeleton = ({ rows = 4 }) => (
   <div className="space-y-3" aria-busy="true"><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-24" />)}</div>
     {Array.from({ length: rows }).map((_, i) => <div key={i} className="skeleton h-12" style={{ opacity: 1 - i * 0.15 }} />)}</div>)
+let _io; const _cb = new WeakMap()
+const shared = () => (_io ||= new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { _cb.get(e.target)?.(); _cb.delete(e.target); _io.unobserve(e.target) } }), { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }))
 export function Reveal({ children, delay = 0, className = '' }) {
   const ref = useRef(null); const [on, setOn] = useState(false)
   useEffect(() => {
-    if (!ref.current || !('IntersectionObserver' in window)) { setOn(true); return }
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setOn(true); io.disconnect() } }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
-    io.observe(ref.current); return () => io.disconnect()
+    const el = ref.current
+    if (!el || !('IntersectionObserver' in window)) { setOn(true); return }
+    _cb.set(el, () => setOn(true)); shared().observe(el)
+    return () => { _cb.delete(el); _io?.unobserve(el) }
   }, [])
   return <div ref={ref} style={{ transitionDelay: `${delay}ms` }} className={`reveal ${on ? 'in' : ''} ${className}`}>{children}</div>
 }
