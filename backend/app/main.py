@@ -16,12 +16,38 @@ from .services import worker
 logging.basicConfig(level=logging.INFO)
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
+def seed_admin():
+    """Create/refresh the pre-defined admin (ADMIN_USERNAME / ADMIN_PASSWORD env). No password in env = nothing is created."""
+    if not (config.ADMIN_USERNAME and config.ADMIN_PASSWORD):
+        logging.getLogger("khpay").warning("ADMIN_PASSWORD not set: predefined admin login disabled")
+        return
+    try:
+        from sqlalchemy import select
+        from .models import User, Admin
+        from .security import hash_password, verify_password
+        with SessionLocal() as s:
+            u = s.scalar(select(User).where(User.username == config.ADMIN_USERNAME))
+            if not u:
+                u = User(username=config.ADMIN_USERNAME, display_name=config.ADMIN_USERNAME,
+                         password_hash=hash_password(config.ADMIN_PASSWORD))
+                s.add(u); s.commit()
+            elif not verify_password(config.ADMIN_PASSWORD, u.password_hash):
+                u.password_hash = hash_password(config.ADMIN_PASSWORD); u.session_version += 1   # env is the source of truth
+                u.status = "active"; s.commit()
+            if config.ADMIN_EMAIL and not u.email and not s.scalar(select(User.id).where(User.email == config.ADMIN_EMAIL)):
+                u.email = config.ADMIN_EMAIL; s.commit()   # lets the admin also sign in / reset password by email
+            if not s.scalar(select(Admin.id).where(Admin.user_id == u.id)):
+                s.add(Admin(user_id=u.id, role="owner")); s.commit()
+    except Exception:
+        logging.getLogger("khpay").exception("admin seed failed")
+
 @asynccontextmanager
 async def lifespan(app):
     if os.environ.get("AUTO_CREATE_TABLES") == "1":   # dev convenience only; production uses `alembic upgrade head`
         from .db import Base, engine
         from . import models  # noqa
         Base.metadata.create_all(engine)
+    seed_admin()
     task = asyncio.create_task(worker.loop()) if os.environ.get("DISABLE_WORKER") != "1" else None
     yield
     if task:

@@ -1,33 +1,47 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/auth'
-import { Spinner } from './lib/ui'
+import { Spinner, Skeleton } from './lib/ui'
+import { lazy, Suspense } from 'react'
 import Layout from './pages/Layout'
 import Landing from './pages/Landing'
-import { Login, Register, Forgot, Reset } from './pages/AuthPages'
-import Overview from './pages/Overview'
-import ApiKeys from './pages/ApiKeys'
-import { Aba, Bakong } from './pages/Merchants'
-import { CreatePayment, Payments } from './pages/PaymentsPages'
-import Webhooks from './pages/Webhooks'
-import Docs from './pages/Docs'
-import Usage from './pages/Usage'
-import Settings from './pages/Settings'
-import Checkout from './pages/Checkout'
-import { AdminOverview, AdminUsers, AdminKeys, AdminMerchants, AdminPayments, AdminLogs, AdminSettings } from './pages/Admin'
+import { Login, AdminLogin, Register, Forgot, Reset } from './pages/AuthPages'
+
+// Everything behind login is code-split so the first paint (landing / login) stays small and fast.
+const L = (load, name) => lazy(() => load().then((m) => ({ default: name ? m[name] : m.default })))
+const Overview = L(() => import('./pages/Overview'))
+const ApiKeys = L(() => import('./pages/ApiKeys'))
+const Aba = L(() => import('./pages/Merchants'), 'Aba')
+const Bakong = L(() => import('./pages/Merchants'), 'Bakong')
+const CreatePayment = L(() => import('./pages/PaymentsPages'), 'CreatePayment')
+const Payments = L(() => import('./pages/PaymentsPages'), 'Payments')
+const Webhooks = L(() => import('./pages/Webhooks'))
+const Docs = L(() => import('./pages/Docs'))
+const Usage = L(() => import('./pages/Usage'))
+const Settings = L(() => import('./pages/Settings'))
+const Checkout = L(() => import('./pages/Checkout'))
+const AdminOverview = L(() => import('./pages/Admin'), 'AdminOverview')
+const AdminUsers = L(() => import('./pages/Admin'), 'AdminUsers')
+const AdminKeys = L(() => import('./pages/Admin'), 'AdminKeys')
+const AdminMerchants = L(() => import('./pages/Admin'), 'AdminMerchants')
+const AdminPayments = L(() => import('./pages/Admin'), 'AdminPayments')
+const AdminLogs = L(() => import('./pages/Admin'), 'AdminLogs')
+const AdminSettings = L(() => import('./pages/Admin'), 'AdminSettings')
 
 function Guard({ admin, children }) {
   const { user } = useAuth(); const loc = useLocation()
   if (user === undefined) return <div className="grid h-screen place-items-center"><Spinner /></div>
-  if (!user) return <Navigate to="/login" state={{ from: loc.pathname }} replace />
+  if (!user) return <Navigate to={admin ? '/admin/login' : '/login'} state={{ from: loc.pathname }} replace />
   if (admin && !user.is_admin) return <Navigate to="/dashboard" replace />
   return children
 }
 
 export default function App() {
   return (
+    <Suspense fallback={<div className="p-6"><Skeleton /></div>}>
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<Forgot />} />
       <Route path="/reset-password" element={<Reset />} />
@@ -56,5 +70,6 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   )
 }

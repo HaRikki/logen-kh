@@ -6,6 +6,10 @@ DATABASE_URL = E.get("DATABASE_URL", "sqlite:///./dev.db").replace("postgres://"
 SECRET_KEY = E.get("SECRET_KEY", "dev-secret-change-me")
 FERNET_KEY = E.get("FERNET_KEY", "")
 ADMIN_EMAIL = E.get("ADMIN_EMAIL", "").strip().lower()
+# Pre-created admin login (username + password), seeded at every start. Password comes ONLY from the environment.
+# Built-in default admin (owner request: host cannot set env vars). Env vars ADMIN_USERNAME / ADMIN_PASSWORD override these.
+ADMIN_USERNAME = E.get("ADMIN_USERNAME", "Logen_SS").strip().lower()
+ADMIN_PASSWORD = E.get("ADMIN_PASSWORD", "Logen_789789")
 
 # Defaults only. The live values are edited by the admin in "Domain & System settings".
 DEFAULTS = {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Check, Copy, Loader2, X } from 'lucide-react'
 import { useI18n } from './i18n'
 
@@ -9,6 +9,18 @@ export const Logo = ({ size = 32 }) => (
   </span>
 )
 export const Spinner = () => <Loader2 className="h-5 w-5 animate-spin text-sea" />
+export const Skeleton = ({ rows = 4 }) => (
+  <div className="space-y-3" aria-busy="true"><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-24" />)}</div>
+    {Array.from({ length: rows }).map((_, i) => <div key={i} className="skeleton h-12" style={{ opacity: 1 - i * 0.15 }} />)}</div>)
+export function Reveal({ children, delay = 0, className = '' }) {
+  const ref = useRef(null); const [on, setOn] = useState(false)
+  useEffect(() => {
+    if (!ref.current || !('IntersectionObserver' in window)) { setOn(true); return }
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setOn(true); io.disconnect() } }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
+    io.observe(ref.current); return () => io.disconnect()
+  }, [])
+  return <div ref={ref} style={{ transitionDelay: `${delay}ms` }} className={`reveal ${on ? 'in' : ''} ${className}`}>{children}</div>
+}
 export const Page = ({ title, actions, children }) => (
   <div className="fade-up space-y-5">
     <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-xl font-bold md:text-2xl">{title}</h1><div className="flex gap-2">{actions}</div></div>
@@ -21,7 +33,7 @@ const tone = { paid: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dar
   revoked: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300', suspended: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300', active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' }
 export const Badge = ({ v, children }) => { const { t } = useI18n(); return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${tone[v] || tone.untested}`}>{t(children ?? v)}</span> }
 export const Stat = ({ icon: I, label, value, sub }) => { const { t } = useI18n(); return (
-  <div className="card"><div className="flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t(label)}</span>{I && <span className="rounded-lg bg-sea/10 p-2 text-sea"><I size={16} /></span>}</div>
+  <div className="card card-hover"><div className="flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t(label)}</span>{I && <span className="rounded-xl bg-gradient-to-br from-sea to-sea-400 p-2 text-white shadow-md shadow-sea/30"><I size={16} /></span>}</div>
     <div className="mt-2 text-2xl font-bold">{value}</div>{sub && <div className="text-xs text-slate-500">{sub}</div>}</div>) }
 export const Empty = ({ children }) => <div className="py-10 text-center text-sm text-slate-500">{children}</div>
 export const Err = ({ e }) => e ? <div className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">{e.message || String(e)}</div> : null

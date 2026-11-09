@@ -17,6 +17,10 @@ services:
         sync: false
       - key: ADMIN_EMAIL
         sync: false
+      - key: ADMIN_USERNAME
+        value: admin1
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: PUBLIC_BASE_URL     # e.g. https://logen-khpay.onrender.com (or your custom domain)
         sync: false
       - key: PROVIDER_CHECK_URL  # can also be set later in Admin > Settings

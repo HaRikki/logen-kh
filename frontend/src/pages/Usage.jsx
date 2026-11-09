@@ -1,11 +1,11 @@
 import { get, D } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { Page, Table, Badge, Stat, Bars, Spinner, Err, Empty, useLoad, when } from '../lib/ui'
+import { Page, Table, Badge, Stat, Bars, Skeleton, Err, Empty, useLoad, when } from '../lib/ui'
 import { Activity } from 'lucide-react'
 
 export default function Usage() {
   const { t } = useI18n(); const { data: d, error, loading } = useLoad(() => get(`${D}/usage`))
-  if (loading) return <Spinner />
+  if (loading) return <Skeleton />
   if (error) return <Err e={error} />
   return (
     <Page title={t('API Usage')}>

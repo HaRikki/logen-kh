@@ -10,6 +10,7 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = col(Integer, primary_key=True)
     email: Mapped[str | None] = col(String(255), unique=True, index=True, nullable=True)
+    username: Mapped[str | None] = col(String(50), unique=True, index=True, nullable=True)
     password_hash: Mapped[str | None] = col(String(255), nullable=True)
     display_name: Mapped[str | None] = col(String(120), nullable=True)
     avatar_url: Mapped[str | None] = col(String(500), nullable=True)

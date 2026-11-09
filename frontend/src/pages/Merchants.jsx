@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, Pencil, Trash2, PlugZap } from 'lucide-react'
 import { get, post, patch, del, D } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { Page, Table, Badge, Modal, Field, Err, Spinner, Empty, Toggle, useLoad, when } from '../lib/ui'
+import { Page, Table, Badge, Modal, Field, Err, Skeleton, Empty, Toggle, useLoad, when } from '../lib/ui'
 
 function Manager({ kind, title, fields, cols, note }) {
   const { t } = useI18n(); const { data, error, loading, reload } = useLoad(() => get(`${D}/${kind}`), [kind])
@@ -16,7 +16,7 @@ function Manager({ kind, title, fields, cols, note }) {
     <Page title={title} actions={<button className="btn-primary" onClick={() => open()}><Plus size={16} />{t('Add')}</button>}>
       <div className="card text-sm text-slate-600 dark:text-slate-300">{note}</div>
       <Err e={err || error} />
-      {loading ? <Spinner /> : !data?.length ? <Empty>Nothing connected yet.</Empty> : (
+      {loading ? <Skeleton /> : !data?.length ? <Empty>Nothing connected yet.</Empty> : (
         <Table head={[...cols.map((c) => c[1]), 'Provider key', 'Connection', t('Enabled'), t('Actions')]}>
           {data.map((m) => (<tr key={m.id}>{cols.map(([k]) => <td key={k} className="td font-medium">{m[k]}</td>)}
             <td className="td font-mono text-xs">{m.key_hint}</td>

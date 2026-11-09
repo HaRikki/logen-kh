@@ -39,7 +39,8 @@ If you created the service as **Node/Python** instead, use: Build Command `npm r
 2. Render → **New → Blueprint** → select the repo (`render.yaml`: Docker web service + Postgres).
 3. Fill the `sync: false` env vars: `FERNET_KEY`, `ADMIN_EMAIL`, `PUBLIC_BASE_URL` (your onrender.com or custom URL), optionally `PROVIDER_CHECK_URL`, OAuth, SMTP.
 4. Deploy. Migrations run on start (`alembic upgrade head`). Health check: `/health`.
-5. **Register with `ADMIN_EMAIL` immediately** – that account becomes the admin (password sign-ups can claim it only while no admin exists; Google/GitHub with a *verified* email always can). Alternative: `python -m backend.app.cli make-admin you@example.com`.
+5. **Pre-created admin:** default admin is built in (`Logen_SS`, see `backend/app/config.py`); set `ADMIN_USERNAME` / `ADMIN_PASSWORD` env vars to override it; on every start the account is created/updated and made admin. Sign in at `/admin/login` (username or email accepted). Changing `ADMIN_PASSWORD` and redeploying resets the password and signs the admin out everywhere. Without `ADMIN_PASSWORD` nothing is created.
+   Also: **register with `ADMIN_EMAIL` immediately** – that account becomes the admin (password sign-ups can claim it only while no admin exists; Google/GitHub with a *verified* email always can). Alternative: `python -m backend.app.cli make-admin you@example.com`.
 6. Open **Admin → Settings**, check the *Setup checklist* and set domains / provider check URL.
 
 Keep a single web worker (`--workers 1`): the background verifier and the in-memory rate limiter are per-process. For several instances move the rate limiter to Redis; payment/webhook state changes are already atomic.

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Users, UserCheck, UserX, CreditCard, CheckCircle2, Clock, Activity, Coins } from 'lucide-react'
 import { get, post, patch, put, A } from '../lib/api'
-import { Page, Table, Badge, Stat, Bars, Spinner, Err, Empty, Pager, Toggle, Field, useLoad, money, when } from '../lib/ui'
+import { Page, Table, Badge, Stat, Bars, Skeleton, Err, Empty, Pager, Toggle, Field, useLoad, money, when } from '../lib/ui'
 
 export function AdminOverview() {
   const { data: d, error, loading } = useLoad(() => get(`${A}/overview`))
-  if (loading) return <Spinner />
+  if (loading) return <Skeleton />
   if (error) return <Err e={error} />
   return (<Page title="Admin Dashboard">
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -20,7 +20,7 @@ export function AdminUsers() {
   const { data, error, loading, reload } = useLoad(() => get(`${A}/users?q=${encodeURIComponent(q)}&page_n=${page}`), [q, page])
   const set = async (u, status) => { await patch(`${A}/users/${u.id}/status`, { status }); reload() }
   return (<Page title="User Management" actions={<input className="input !w-56" placeholder="Search…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1) }} />}>
-    <Err e={error} />{loading ? <Spinner /> : (<><Table head={['ID', 'User', 'Login methods', 'Payments', 'Joined', 'Last login', 'Status', '']}>
+    <Err e={error} />{loading ? <Skeleton /> : (<><Table head={['ID', 'User', 'Login methods', 'Payments', 'Joined', 'Last login', 'Status', '']}>
       {data.items.map((u) => <tr key={u.id}><td className="td">{u.id}</td><td className="td"><div className="font-medium">{u.display_name}{u.is_admin && <span className="ml-2 text-xs text-sea">admin</span>}</div><div className="text-xs text-slate-500">{u.email || '—'}</div></td>
         <td className="td text-xs">{['password', ...u.socials].join(', ')}</td><td className="td">{u.payments}</td><td className="td text-xs">{when(u.created_at)}</td><td className="td text-xs">{when(u.last_login_at)}</td><td className="td"><Badge v={u.status} /></td>
         <td className="td">{u.status === 'active' ? <button className="btn-ghost !py-1 text-red-500" onClick={() => confirm('Suspend this user?') && set(u, 'suspended')}>Suspend</button> : <button className="btn-ghost !py-1" onClick={() => set(u, 'active')}>Activate</button>}</td></tr>)}</Table>
@@ -30,7 +30,7 @@ export function AdminUsers() {
 export function AdminKeys() {
   const [page, setPage] = useState(1); const { data, error, loading, reload } = useLoad(() => get(`${A}/keys?page_n=${page}`), [page])
   return (<Page title="API Key Management"><div className="card text-sm">Secrets are stored hashed, so only the prefix is visible here. You can revoke any key.</div><Err e={error} />
-    {loading ? <Spinner /> : (<><Table head={['Owner', 'Name', 'Key', 'Permissions', 'Requests', 'Last used', 'Status', '']}>
+    {loading ? <Skeleton /> : (<><Table head={['Owner', 'Name', 'Key', 'Permissions', 'Requests', 'Last used', 'Status', '']}>
       {data.items.map((k) => <tr key={k.id}><td className="td text-xs">{k.owner}</td><td className="td">{k.name}</td><td className="td font-mono text-xs">{k.prefix}…</td><td className="td text-xs">{k.permissions.join(', ')}</td><td className="td">{k.request_count}</td><td className="td text-xs">{when(k.last_used_at)}</td>
         <td className="td"><Badge v={k.revoked ? 'revoked' : 'active'} /></td><td className="td">{!k.revoked && <button className="btn-ghost !py-1 text-red-500" onClick={async () => { await post(`${A}/keys/${k.id}/revoke`); reload() }}>Revoke</button>}</td></tr>)}</Table>
       <Pager total={data.total} page={page} setPage={setPage} size={50} /></>)}</Page>)
@@ -39,7 +39,7 @@ export function AdminKeys() {
 export function AdminMerchants() {
   const { data, error, loading, reload } = useLoad(() => get(`${A}/merchants`))
   return (<Page title="Merchant Management"><div className="card text-sm">Provider credentials are encrypted and never exposed, not even to admins.</div><Err e={error} />
-    {loading ? <Spinner /> : !data.length ? <Empty>No merchants.</Empty> : <Table head={['Type', 'Owner', 'Name', 'Connection', 'Enabled']}>
+    {loading ? <Skeleton /> : !data.length ? <Empty>No merchants.</Empty> : <Table head={['Type', 'Owner', 'Name', 'Connection', 'Enabled']}>
       {data.map((m) => <tr key={m.kind + m.id}><td className="td uppercase">{m.kind}</td><td className="td text-xs">{m.owner}</td><td className="td">{m.name}</td><td className="td"><Badge v={m.connection_status} /></td>
         <td className="td"><Toggle on={m.enabled} onChange={async () => { await post(`${A}/merchants/${m.kind}/${m.id}/toggle`); reload() }} /></td></tr>)}</Table>}</Page>)
 }
@@ -49,7 +49,7 @@ export function AdminPayments() {
   const { data, error, loading } = useLoad(() => get(`${A}/payments?status=${status}&q=${encodeURIComponent(q)}&page_n=${page}`), [status, q, page])
   return (<Page title="Payment Monitoring" actions={<><input className="input !w-48" placeholder="Order / email" value={q} onChange={(e) => { setQ(e.target.value); setPage(1) }} />
     <select className="input !w-auto" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1) }}><option value="">All</option><option>pending</option><option>paid</option><option>expired</option></select></>}>
-    <Err e={error} />{loading ? <Spinner /> : (<><Table head={['Order', 'Owner', 'Type', 'Merchant', 'Amount', 'Status', 'Created', 'Paid']}>
+    <Err e={error} />{loading ? <Skeleton /> : (<><Table head={['Order', 'Owner', 'Type', 'Merchant', 'Amount', 'Status', 'Created', 'Paid']}>
       {data.items.map((p) => <tr key={p.order_id}><td className="td font-mono text-xs">{p.order_id}</td><td className="td text-xs">{p.owner}</td><td className="td uppercase">{p.kind}</td><td className="td">{p.merchant_name}</td><td className="td">{money(p.amount, p.currency)}</td><td className="td"><Badge v={p.status} /></td><td className="td text-xs">{when(p.created_at)}</td><td className="td text-xs">{when(p.paid_at)}</td></tr>)}</Table>
       <Pager total={data.total} page={page} setPage={setPage} size={50} /></>)}</Page>)
 }
@@ -61,7 +61,7 @@ export function AdminLogs() {
     webhooks: [['created_at', 'Time'], ['user', 'User'], ['event', 'Event'], ['status_code', 'HTTP'], ['error', 'Error'], ['attempts', 'Attempts']],
     audit: [['created_at', 'Time'], ['user', 'User'], ['action', 'Action'], ['target', 'Target'], ['ip', 'IP']] }[tab]
   return (<Page title="Logs" actions={['api', 'webhooks', 'audit'].map((x) => <button key={x} className={tab === x ? 'btn-primary' : 'btn-ghost'} onClick={() => { setTab(x); setPage(1) }}>{x}</button>)}>
-    <Err e={error} />{loading ? <Spinner /> : (<><Table head={cols.map((c) => c[1])}>{data.items.map((r) => <tr key={r.id}>{cols.map(([k]) => <td key={k} className="td text-xs">{k === 'created_at' ? when(r[k]) : String(r[k] ?? '—')}</td>)}</tr>)}</Table>
+    <Err e={error} />{loading ? <Skeleton /> : (<><Table head={cols.map((c) => c[1])}>{data.items.map((r) => <tr key={r.id}>{cols.map(([k]) => <td key={k} className="td text-xs">{k === 'created_at' ? when(r[k]) : String(r[k] ?? '—')}</td>)}</tr>)}</Table>
       <Pager total={data.total} page={page} setPage={setPage} size={50} /></>)}</Page>)
 }
 
@@ -72,7 +72,7 @@ const GROUPS = [['Domain & hosting', [['site_url', 'Main Website URL', 'https://
 export function AdminSettings() {
   const { data, error, loading, reload } = useLoad(() => get(`${A}/settings`)); const [v, setV] = useState(null); const [msg, setMsg] = useState(null); const [err, setErr] = useState(null)
   useEffect(() => { if (data) setV(data.values) }, [data])
-  if (loading || !v) return <Spinner />
+  if (loading || !v) return <Skeleton />
   const save = async () => { setErr(null); setMsg(null); try { await put(`${A}/settings`, v); setMsg('Saved'); reload() } catch (e) { setErr(e) } }
   const sys = data.system
   return (<Page title="System Settings" actions={<button className="btn-primary" onClick={save}>Save</button>}>

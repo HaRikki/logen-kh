@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, Trash2, Send, RotateCw, KeyRound } from 'lucide-react'
 import { get, post, patch, del, D } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { Page, Table, Badge, Modal, Field, Err, Spinner, Empty, Toggle, CopyBtn, useLoad, when } from '../lib/ui'
+import { Page, Table, Badge, Modal, Field, Err, Skeleton, Empty, Toggle, CopyBtn, useLoad, when } from '../lib/ui'
 
 const EV = ['payment.pending', 'payment.paid', 'payment.expired']
 export default function Webhooks() {
@@ -15,7 +15,7 @@ export default function Webhooks() {
     <Page title={t('Webhooks')} actions={<button className="btn-primary" onClick={() => { setErr(null); setOpen(true) }}><Plus size={16} />{t('Add')}</button>}>
       <div className="card text-sm">Events are sent only after Logen KHPay has confirmed the status with the provider. Each request carries <code>X-KHPay-Signature</code> = HMAC-SHA256(secret, <code>timestamp + "." + body</code>) and <code>X-KHPay-Timestamp</code>. See the docs for verification code.</div>
       <Err e={err || hooks.error} />{msg && <div className="text-sm">{msg}</div>}
-      {hooks.loading ? <Spinner /> : !hooks.data?.length ? <Empty>No webhooks yet.</Empty> : (
+      {hooks.loading ? <Skeleton /> : !hooks.data?.length ? <Empty>No webhooks yet.</Empty> : (
         <Table head={['URL', 'Events', t('Enabled'), t('Actions')]}>
           {hooks.data.map((w) => (<tr key={w.id}><td className="td break-all font-mono text-xs">{w.url}</td><td className="td text-xs">{w.events.join(', ')}</td>
             <td className="td"><Toggle on={w.enabled} onChange={(v) => run(() => patch(`${D}/webhooks/${w.id}`, { url: w.url, events: w.events, enabled: v }))} /></td>

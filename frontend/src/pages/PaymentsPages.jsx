@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { ExternalLink, RefreshCw } from 'lucide-react'
 import { get, post, D } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { Page, Table, Badge, Field, Err, Spinner, Empty, CopyBtn, Pager, useLoad, money, when } from '../lib/ui'
+import { Page, Table, Badge, Field, Err, Skeleton, Empty, CopyBtn, Pager, useLoad, money, when } from '../lib/ui'
 
 export function CreatePayment() {
   const { t } = useI18n(); const [f, setF] = useState({ kind: 'aba', amount: '', reference: '' }); const [r, setR] = useState(null); const [err, setErr] = useState(null); const [busy, setBusy] = useState(false)
@@ -34,7 +34,7 @@ export function Payments() {
   return (
     <Page title={t('Payment History')} actions={<select className="input !w-auto" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1) }}><option value="">All</option><option value="pending">Pending</option><option value="paid">Paid</option><option value="expired">Expired</option></select>}>
       <Err e={error} />
-      {loading ? <Spinner /> : !data?.items.length ? <Empty>No payments yet. <Link className="text-sea" to="/dashboard/create">Create one</Link>.</Empty> : (<>
+      {loading ? <Skeleton /> : !data?.items.length ? <Empty>No payments yet. <Link className="text-sea" to="/dashboard/create">Create one</Link>.</Empty> : (<>
         <Table head={['Order ID', 'Type', t('Merchant'), t('Amount'), t('Status'), 'Transaction', t('Created'), 'Expires', '']}>
           {data.items.map((p) => (<tr key={p.order_id}><td className="td font-mono text-xs"><a className="text-sea" href={p.checkout_url} target="_blank" rel="noreferrer">{p.order_id}</a></td><td className="td uppercase">{p.type}</td><td className="td">{p.merchant_name}</td>
             <td className="td font-semibold">{money(p.amount, p.currency)}</td><td className="td"><Badge v={p.status} /></td><td className="td font-mono text-xs">{p.transaction_id || '—'}</td>

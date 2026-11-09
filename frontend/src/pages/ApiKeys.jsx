@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, RefreshCw, Ban, Trash2, KeyRound } from 'lucide-react'
 import { get, post, del, D } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { Page, Table, Badge, Modal, Field, CopyBtn, Err, Spinner, Empty, useLoad, when } from '../lib/ui'
+import { Page, Table, Badge, Modal, Field, CopyBtn, Err, Skeleton, Empty, useLoad, when } from '../lib/ui'
 
 export default function ApiKeys() {
   const { t } = useI18n(); const { data, error, loading, reload } = useLoad(() => get(`${D}/keys`))
@@ -14,7 +14,7 @@ export default function ApiKeys() {
     <Page title={t('API Keys')} actions={<button className="btn-primary" onClick={() => setOpen(true)}><Plus size={16} />{t('Create API Key')}</button>}>
       <p className="text-sm text-slate-500">These are Logen KHPay platform keys (<code>sk_live_…</code>), not ABA/Bakong official keys. Use them in the <code>Authorization: Bearer</code> header.</p>
       <Err e={err || error} />
-      {loading ? <Spinner /> : !data?.length ? <Empty><KeyRound className="mx-auto mb-2" />No API keys yet.</Empty> : (
+      {loading ? <Skeleton /> : !data?.length ? <Empty><KeyRound className="mx-auto mb-2" />No API keys yet.</Empty> : (
         <Table head={['Name', 'Key', 'Permissions', 'Requests', 'Last used', 'Created', 'Status', t('Actions')]}>
           {data.map((k) => (<tr key={k.id}><td className="td font-medium">{k.name}</td><td className="td font-mono text-xs">{k.prefix}…</td>
             <td className="td text-xs">{k.permissions.join(', ')}</td><td className="td">{k.request_count}</td><td className="td text-xs">{when(k.last_used_at)}</td><td className="td text-xs">{when(k.created_at)}</td>

@@ -37,7 +37,7 @@ def maybe_promote(s: Session, u: User, verified: bool):
 
 def user_json(s: Session, u: User):
     socials = s.scalars(select(UserSocialAccount).where(UserSocialAccount.user_id == u.id)).all()
-    return {"id": u.id, "email": u.email, "display_name": u.display_name, "avatar_url": u.avatar_url,
+    return {"id": u.id, "email": u.email, "username": u.username, "display_name": u.display_name, "avatar_url": u.avatar_url,
             "is_admin": is_admin(s, u), "has_password": bool(u.password_hash), "created_at": u.created_at,
             "socials": [{"provider": x.provider, "username": x.username, "avatar_url": x.avatar_url} for x in socials]}
 
@@ -53,26 +53,46 @@ def auth_config():
             "telegram": bool(config.TELEGRAM_BOT_TOKEN and config.TELEGRAM_BOT_USERNAME),
             "telegram_bot": config.TELEGRAM_BOT_USERNAME or None}
 
+USERNAME_RE = r"^[A-Za-z0-9_.]{3,30}$"
+
+class RegisterIn(BaseModel):
+    username: str = Field(pattern=USERNAME_RE)
+    email: str = Field(pattern=EMAIL_RE, max_length=255)
+    password: str = Field(min_length=8, max_length=128)
+    confirm_password: str = Field(max_length=128)
+    remember: bool = True
+
 @router.post("/register")
-def register(c: Cred, req: Request, resp: Response, s: Session = Depends(get_db)):
+def register(c: RegisterIn, req: Request, resp: Response, s: Session = Depends(get_db)):
     limit_ip(req, "register", 10, 3600)
-    email = c.email.lower()
+    if c.password != c.confirm_password:
+        raise ApiError(400, "password_mismatch", "Passwords do not match.")
+    email, uname = c.email.lower(), c.username.lower()
+    if uname.startswith("admin") or uname in ("root", "support", "system", "logen", "khpay", config.ADMIN_USERNAME):
+        raise ApiError(409, "username_taken", "This username is reserved.")
+    if s.scalar(select(User).where(User.username == uname)):
+        raise ApiError(409, "username_taken", "This username is already taken.")
     if s.scalar(select(User).where(User.email == email)):
         raise ApiError(409, "email_taken", "This email is already registered.")
-    u = User(email=email, password_hash=hash_password(c.password), display_name=email.split("@")[0])
+    u = User(username=uname, email=email, password_hash=hash_password(c.password), display_name=c.username)
     s.add(u); s.commit()
     maybe_promote(s, u, verified=False)
     audit(s, req, u.id, "register")
     set_login(resp, u, c.remember)
     return user_json(s, u)
 
+class LoginIn(BaseModel):
+    email: str = Field(min_length=1, max_length=255)   # e-mail OR username
+    password: str = Field(min_length=1, max_length=128)
+    remember: bool = True
+
 @router.post("/login")
-def login(c: Cred, req: Request, resp: Response, s: Session = Depends(get_db)):
+def login(c: LoginIn, req: Request, resp: Response, s: Session = Depends(get_db)):
     limit_ip(req, "login", 20, 60)
-    email = c.email.lower()
+    email = c.email.strip().lower()
     if not rate_hit(f"login:{email}", 10, 300):
         raise ApiError(429, "rate_limited", "Too many attempts for this account. Try again in a few minutes.")
-    u = s.scalar(select(User).where(User.email == email))
+    u = s.scalar(select(User).where((User.email == email) | (User.username == email)))
     if not u or not verify_password(c.password, u.password_hash):
         raise ApiError(401, "bad_credentials", "Email or password is incorrect.")
     if u.status != "active":

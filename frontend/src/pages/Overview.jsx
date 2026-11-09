@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom'
 import { CreditCard, CheckCircle2, Clock, XCircle, Coins, Activity, KeyRound, AlertTriangle } from 'lucide-react'
 import { get, D } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { Page, Stat, Spinner, Err, Bars, money, useLoad } from '../lib/ui'
+import { Page, Stat, Skeleton, Err, Bars, money, useLoad } from '../lib/ui'
 
 export default function Overview() {
   const { t } = useI18n(); const { data: d, error, loading } = useLoad(() => get(`${D}/overview`))
-  if (loading) return <Spinner />
+  if (loading) return <Skeleton />
   if (error) return <Err e={error} />
   const todo = []
   if (!d.has_aba && !d.has_bakong) todo.push(['Connect a merchant (ABA or Bakong)', '/dashboard/aba'])
